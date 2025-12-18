@@ -26,11 +26,20 @@ const Publicacion = {
     },
 
     // Actualizar una publicación
-    async update(id, { titulo, descripcion, imagen }) {
-        await db.query(
-            'UPDATE publicaciones SET titulo = ?, descripcion = ?, imagen = ? WHERE id = ?',
-            [titulo, descripcion, imagen, id]
-        );
+    async update(id, { titulo, descripcion, imagen, etiquetas }) {
+        // Si imagen es proporcionada, actualizarla también
+        if (imagen !== undefined) {
+            await db.query(
+                'UPDATE publicaciones SET titulo = ?, descripcion = ?, imagen = ?, etiquetas = ? WHERE id = ?',
+                [titulo, descripcion, imagen, etiquetas, id]
+            );
+        } else {
+            // Solo actualizar título y descripción, sin tocar imagen ni etiquetas
+            await db.query(
+                'UPDATE publicaciones SET titulo = ?, descripcion = ? WHERE id = ?',
+                [titulo, descripcion, id]
+            );
+        }
     },
 
     // Eliminar una publicación

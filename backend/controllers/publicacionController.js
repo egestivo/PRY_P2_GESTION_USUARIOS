@@ -96,17 +96,22 @@ module.exports = {
         try {
             const { id } = req.params;
             const { titulo, descripcion } = req.body;
+            
+            if (!titulo || !descripcion) {
+                return res.status(400).json({ message: 'Título y descripción son obligatorios.' });
+            }
+            
             const publicacion = await Publicacion.findById(id);
             if (!publicacion) return res.status(404).json({ message: 'No encontrada.' });
+            
             // Solo el autor puede editar
             if (publicacion.usuario_id !== req.user.id) {
                 return res.status(403).json({ message: 'Solo el autor puede editar.' });
             }
-            let imagen = req.body.imagen;
-            if (req.file) {
-                imagen = '/uploads/' + req.file.filename;
-            }
-            await Publicacion.update(id, { titulo, descripcion, imagen });
+            
+            // Solo actualizar título y descripción (sin tocar imagen ni etiquetas)
+            await Publicacion.update(id, { titulo, descripcion });
+            
             res.json({ message: 'Publicación actualizada' });
         } catch (error) {
             console.error(error);

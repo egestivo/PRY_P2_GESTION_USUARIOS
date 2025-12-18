@@ -27,8 +27,8 @@ router.get('/', publicacionController.findAll);
 router.get('/:id', publicacionController.findById);
 
 
-// Actualizar publicación (solo autor, acepta nueva imagen)
-router.put('/:id', authenticateToken, upload.single('imagen'), publicacionController.update);
+// Actualizar publicación (solo autor, solo título y descripción)
+router.put('/:id', authenticateToken, publicacionController.update);
 // Eliminar publicación (solo autor o admin)
 router.delete('/:id', authenticateToken, publicacionController.remove);
 // Eliminar publicación como admin (puede eliminar cualquier publicación)

@@ -1,22 +1,31 @@
 # 📚 Documentación Técnica - Sistema CoursArt
 
+## 🚀 Cómo Ejecutar el Proyecto
+
+### Backend
+```bash
+cd backend
+npm install
+node server.js
+# Corre en http://localhost:1234
+```
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+# Corre en http://localhost:5173
+```
+
 ## 🎨 Introducción
 
-Este proyecto es una red social artística universitaria llamada **CoursArt**, construida con **Lit Elements** (Web Components) en el frontend y **Node.js + Express + MySQL** en el backend. El sistema cuenta con autenticación JWT, roles de usuario (admin, artista, visitante) y funcionalidades completas de publicaciones, comentarios y favoritos.
+Este proyecto simula una red artísticallamada **CoursArt**, construida con **Lit Elements** (Web Components) en el frontend y **Node.js + Express + MySQL** en el backend. El sistema cuenta con autenticación JWT, roles de usuario (admin, artista, visitante) y funcionalidades completas de publicaciones, comentarios y favoritos.
 
 ---
 
 ## 🧩 Arquitectura Frontend - Lit Elements
 
-### ¿Qué son Lit Elements?
-
-**Lit** es una biblioteca moderna para crear **Web Components** reutilizables, encapsulados y con rendimiento optimizado. Cada componente tiene:
-
-- **Shadow DOM**: Encapsulación de estilos y estructura
-- **Propiedades Reactivas**: Actualización automática de la UI cuando cambian los datos
-- **Ciclo de vida**: Métodos como `connectedCallback()`, `render()`, `updated()`
-
----
 
 ## 📂 Estructura de Componentes
 
@@ -65,10 +74,6 @@ static properties = {
   editandoPublicacion: { type: Object }
 };
 ```
-
-#### Eventos Emitidos
-- **NO emite eventos directamente** (es el nivel superior)
-
 #### Eventos Escuchados
 ```javascript
 // En connectedCallback():
@@ -702,126 +707,6 @@ _showSnackbar(msg, color = '#dc3545') {
   }));
 }
 
-// Ejemplos de uso:
-this._showSnackbar('✅ Publicación creada', '#28a745'); // Verde (éxito)
-this._showSnackbar('⚠️ Campo obligatorio', '#ff9800');  // Naranja (warning)
-this._showSnackbar('❌ Error al guardar', '#dc3545');  // Rojo (error)
-```
-
-**Colores comunes**:
-- `#28a745` - Verde (éxito)
-- `#198754` - Verde oscuro
-- `#ff9800` - Naranja (warning)
-- `#dc3545` - Rojo (error)
-- `#667eea` - Morado (info)
-
----
-
-## 🔄 Flujo de Eventos en la Aplicación
-
-### Ejemplo: Creación de Publicación
-
-```
-1. Usuario hace clic en "Nueva publicación" (navbar)
-   ↓
-2. my-element escucha @click → this.page = 'nueva'
-   ↓
-3. Renderiza <publicacion-nueva>
-   ↓
-4. Usuario llena formulario y hace clic en "Publicar"
-   ↓
-5. publicacion-nueva._onSubmit() → POST /api/publicaciones
-   ↓
-6. Backend guarda en DB, retorna publicación creada
-   ↓
-7. publicacion-nueva emite evento 'publicacion-creada'
-   ↓
-8. my-element escucha evento → this.page = 'listado'
-   ↓
-9. publicacion-listado._cargarPublicaciones() → GET /api/publicaciones
-   ↓
-10. Renderiza feed con nueva publicación incluida
-```
-
-### Ejemplo: Toggle Favorito
-
-```
-1. Usuario hace clic en ⭐ en una publicación
-   ↓
-2. favorito-boton._toggleFavorito() → stopPropagation()
-   ↓
-3. Verifica if (this.favorito) → quitar : agregar
-   ↓
-4. POST /api/favoritos/add con { publicacion_id: X }
-   ↓
-5. Backend inserta en tabla favoritos: (usuario_id, publicacion_id)
-   ↓
-6. favorito-boton.favorito = true (actualiza UI automáticamente)
-   ↓
-7. Emite evento 'favorito-cambiado' (opcional, para estadísticas)
-   ↓
-8. Muestra snackbar: "Agregado a favoritos ⭐"
-```
-
-### Ejemplo: Ver Favoritos
-
-```
-1. Usuario hace clic en "⭐ Ver Favoritos" en perfil
-   ↓
-2. perfil-usuario._verFavoritos() → emite 'ver-favoritos'
-   ↓
-3. my-element escucha evento → this.page = 'favoritos'
-   ↓
-4. Renderiza <favorito-listado .usuarioId=${this.user.id}>
-   ↓
-5. favorito-listado.connectedCallback() → _cargarFavoritos()
-   ↓
-6. GET /api/favoritos/usuario/:usuarioId
-   ↓
-7. Backend consulta:
-   SELECT f.*, p.titulo, p.imagen
-   FROM favoritos f
-   JOIN publicaciones p ON f.publicacion_id = p.id
-   WHERE f.usuario_id = ?
-   ↓
-8. Renderiza lista de publicaciones favoritas
-   ↓
-9. Usuario hace clic en una publicación → emite 'ver-publicacion-favorita'
-   ↓
-10. my-element escucha evento → GET /api/publicaciones/:id → this.page = 'detalle'
-```
-
-### Ejemplo: Cambio de Contraseña
-
-```
-1. Usuario hace clic en "✏️ Editar Perfil"
-   ↓
-2. perfil-usuario._editarPerfil() → emite 'editar-perfil'
-   ↓
-3. my-element escucha evento → this.page = 'editar-perfil'
-   ↓
-4. Renderiza <editar-perfil .usuario=${this.user}>
-   ↓
-5. Usuario llena "Contraseña Actual" y "Contraseña Nueva"
-   ↓
-6. Usuario hace clic en "💾 Guardar Cambios"
-   ↓
-7. editar-perfil._onSubmit() ejecuta:
-   a) PUT /api/usuarios/:id (actualiza nombre, correo, foto)
-   b) POST /api/usuarios/:id/change-password con:
-      { currentPassword: "...", newPassword: "..." }
-   ↓
-8. Backend valida:
-   - Busca usuario: SELECT * FROM usuarios WHERE id = ?
-   - Compara: bcrypt.compare(currentPassword, usuario.contrasena)
-   - Si match: bcrypt.hash(newPassword, 10)
-   - Actualiza: UPDATE usuarios SET contrasena = ? WHERE id = ?
-   ↓
-9. editar-perfil emite 'perfil-actualizado'
-   ↓
-10. my-element escucha evento → this.page = 'perfil'
-```
-
 ---
 
 ## 🛠️ Patrones y Técnicas Utilizadas
@@ -947,22 +832,6 @@ Los estilos y elementos están encapsulados, no interfieren con otros componente
    });
 ```
 
-### Protección de Rutas
-
-**Backend**:
-```javascript
-router.post('/favoritos/add', authenticateToken, favoritoController.add);
-router.get('/admin/usuarios', authenticateToken, authorizeRoles('admin'), ...);
-```
-
-**Frontend**:
-```javascript
-// En render():
-${this.user?.rol === 'artista' ? html`
-  <button>Nueva publicación</button>
-` : ''}
-```
-
 ---
 
 ## 📦 Backend - Endpoints Principales
@@ -1040,62 +909,7 @@ _handleEvento(e) {
 <form @submit=${this._handleSubmit} novalidate>
 ```
 
-### Propiedades Reactivas
-
-**Cambiar una propiedad reactiva automáticamente re-renderiza el componente.**
-
-```javascript
-static properties = {
-  count: { type: Number },
-  usuario: { type: Object }
-};
-
-constructor() {
-  super();
-  this.count = 0;
-}
-
-increment() {
-  this.count++; // Automáticamente actualiza UI
-}
-```
-
-### Shadow DOM y `this.renderRoot`
-
-**Cada componente Lit tiene su propio DOM encapsulado.**
-
-```javascript
-// Acceso a elementos dentro del Shadow DOM:
-const input = this.renderRoot.querySelector('input[name="username"]');
-const dialog = this.shadowRoot.querySelector('ui-confirm-dialog');
-```
-
-### Spread Operator para Actualizar Objetos
-
-```javascript
-// Actualizar usuario preservando referencia reactiva:
-this.user = { ...this.user, fotografia: '/nueva/ruta.jpg' };
-```
-
 ---
-
-## 🚀 Cómo Ejecutar el Proyecto
-
-### Backend
-```bash
-cd backend
-npm install
-node server.js
-# Corre en http://localhost:1234
-```
-
-### Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-# Corre en http://localhost:5173
-```
 
 ### Base de Datos
 ```bash
@@ -1104,75 +918,3 @@ mysql -u root -p < database_dump.sql
 
 ---
 
-## 📝 Notas para Defensa del Proyecto
-
-### Preguntas Comunes
-
-**¿Por qué Lit Elements en lugar de React/Vue?**
-- Lit es más ligero (5KB vs 40KB+ de React)
-- Web Components nativos, interoperables con cualquier framework
-- Shadow DOM nativo para encapsulación real
-- Rendimiento superior (Virtual DOM es innecesario)
-
-**¿Cómo funciona la reactividad en Lit?**
-- Propiedades reactivas (`static properties`)
-- Cambios automáticos detectados via Proxy
-- Re-render eficiente solo de partes modificadas
-
-**¿Cómo se comunican los componentes?**
-- Eventos personalizados (`CustomEvent`) con `bubbles: true, composed: true`
-- Atraviesan Shadow DOM y burbujean hasta `my-element`
-
-**¿Cómo evitan alerts y console.log?**
-- `ui-snackbar.js` para notificaciones toast
-- `ui-confirm-dialog.js` para confirmaciones modales Promise-based
-- 0 `alert()`, `confirm()`, o `console.log()` en producción
-
-**¿Cómo funciona el sistema de favoritos?**
-1. Usuario hace clic en `<favorito-boton>`
-2. Componente verifica estado con `GET /api/favoritos/exists/:id`
-3. Toggle: `POST /api/favoritos/add` o `POST /api/favoritos/remove`
-4. Backend inserta/elimina en tabla `favoritos` (usuario_id, publicacion_id)
-5. Vista de favoritos: `GET /api/favoritos/usuario/:id` (público)
-
-**¿Cómo funciona el cambio de contraseña?**
-1. Usuario llena campos en `editar-perfil.js`
-2. Frontend envía: `POST /api/usuarios/:id/change-password`
-3. Backend valida contraseña actual con `bcrypt.compare()`
-4. Backend hashea nueva con `bcrypt.hash(newPassword, 10)`
-5. Backend actualiza: `UPDATE usuarios SET contrasena = ?`
-
----
-
-## 🎨 Temas de Diseño
-
-- **Colores**: Gradientes azul-morado-rosa (`#667eea`, `#764ba2`, `#ec4899`)
-- **Botones**: Naranja-amarillo (`#ff6b6b`, `#feca57`)
-- **Glassmorphism**: `backdrop-filter: blur(20px)` + `rgba(30, 27, 75, 0.7)`
-- **Animaciones**: `fadeIn`, `fadeInUp`, `slideUp`, `pulse`
-- **Tema oscuro**: Degradados `#0f172a` → `#1e1b4b` → `#4c1d95` → `#7f1d1d`
-
----
-
-## ✅ Checklist de Funcionalidades
-
-- [x] Autenticación JWT con roles (admin, artista, visitante)
-- [x] CRUD Publicaciones con imágenes
-- [x] CRUD Comentarios
-- [x] Sistema de Favoritos (toggle, listar)
-- [x] Editar perfil con foto
-- [x] Cambiar contraseña (contraseña actual + nueva)
-- [x] Panel de administración (listar, eliminar usuarios)
-- [x] Validación en tiempo real (contraseñas, email, campos obligatorios)
-- [x] Notificaciones toast (ui-snackbar)
-- [x] Diálogos de confirmación (ui-confirm-dialog)
-- [x] Cache busting para imágenes
-- [x] Tema oscuro completo
-- [x] 0 alerts, 0 console.log en frontend
-- [x] Responsive design con Bootstrap 5
-
----
-
-**Autor**: Sistema CoursArt - Red Social Artística Universitaria  
-**Tecnologías**: Lit Elements, Node.js, Express, MySQL, JWT, bcrypt, Multer, Bootstrap 5  
-**Fecha**: Diciembre 2025

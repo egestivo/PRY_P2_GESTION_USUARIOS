@@ -9,6 +9,18 @@ export class PublicacionEditar extends LitElement {
             .publicacion-card { max-width: 600px; margin: 2rem auto; }
             .fade-in { animation: fadeIn 1s; }
             @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            .preview-img {
+                width: 100%;
+                max-height: 300px;
+                object-fit: cover;
+                border-radius: 8px;
+                margin-bottom: 1rem;
+            }
+            .preview-label {
+                font-size: 0.875rem;
+                color: #6c757d;
+                margin-bottom: 0.5rem;
+            }
         `
     ];
 
@@ -29,7 +41,15 @@ export class PublicacionEditar extends LitElement {
       <ui-snackbar></ui-snackbar>
       <div class="card publicacion-card fade-in shadow">
         <div class="card-body">
-          <h3 class="card-title mb-4 text-center">Editar Publicación</h3>
+          <h3 class="card-title mb-4 text-center">✏️ Editar Publicación</h3>
+          
+          ${this.publicacion.imagen ? html`
+            <div class="mb-3">
+              <label class="preview-label">Imagen actual:</label>
+              <img class="preview-img" src="${this.publicacion.imagen}" alt="${this.publicacion.titulo}" />
+            </div>
+          ` : ''}
+          
           <form @submit=${this._onSubmit} @input=${this._onInput} autocomplete="off" novalidate>
             <div class="mb-3">
               <label class="form-label">Título</label>
@@ -41,16 +61,11 @@ export class PublicacionEditar extends LitElement {
               <textarea class="form-control" name="descripcion" rows="3" required minlength="10">${this.publicacion.descripcion || ''}</textarea>
               <div class="invalid-feedback">La descripción es obligatoria y debe tener al menos 10 caracteres.</div>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Imagen (opcional)</label>
-              <input class="form-control" type="file" name="imagen" accept="image/*" />
-              <div class="form-text">Si no seleccionas una nueva imagen, se mantiene la actual.</div>
+            
+            <div class="alert alert-info">
+              ℹ️ La imagen y etiquetas no se pueden editar. Solo puedes cambiar el título y la descripción.
             </div>
-            <div class="mb-3">
-              <label class="form-label">Etiquetas (separadas por coma)</label>
-              <input class="form-control" name="etiquetas" .value=${this.publicacion.etiquetas || ''} />
-              <div class="form-text">Opcional: ayuda a otros a encontrar tu publicación</div>
-            </div>
+            
             <button class="btn btn-primary w-100" ?disabled=${this.loading}>
               ${this.loading ? html`<span class="spinner-border spinner-border-sm"></span>` : 'Guardar Cambios'}
             </button>
@@ -100,15 +115,20 @@ export class PublicacionEditar extends LitElement {
             return;
         }
         this.loading = true;
-        const fd = new FormData(form);
+        
+        // Enviar solo título y descripción (sin FormData, sin imagen)
+        const titulo = form.titulo.value.trim();
+        const descripcion = form.descripcion.value.trim();
+        
         try {
             const token = localStorage.getItem('token');
             const res = await fetch(`/api/publicaciones/${this.publicacion.id}`, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 },
-                body: fd
+                body: JSON.stringify({ titulo, descripcion })
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || 'Error al actualizar');
