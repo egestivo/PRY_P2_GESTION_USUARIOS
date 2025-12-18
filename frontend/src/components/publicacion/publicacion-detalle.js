@@ -127,11 +127,11 @@ export class PublicacionDetalle extends LitElement {
         if (!this.publicacion) return html`<div class="text-center mt-5">⏳ Cargando publicación...</div>`;
         
         const imagenUrl = this.publicacion.imagen 
-            ? `http://localhost:1234${this.publicacion.imagen}` 
+            ? `${this.publicacion.imagen}` 
             : 'https://via.placeholder.com/700x350';
         
         const autorFoto = this.publicacion.autor_foto 
-            ? `http://localhost:1234${this.publicacion.autor_foto}` 
+            ? `${this.publicacion.autor_foto}` 
             : 'https://via.placeholder.com/50';
         
         return html`

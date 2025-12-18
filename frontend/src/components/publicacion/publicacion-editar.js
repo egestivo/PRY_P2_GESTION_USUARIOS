@@ -102,8 +102,12 @@ export class PublicacionEditar extends LitElement {
         this.loading = true;
         const fd = new FormData(form);
         try {
+            const token = localStorage.getItem('token');
             const res = await fetch(`/api/publicaciones/${this.publicacion.id}`, {
                 method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
                 body: fd
             });
             const data = await res.json();

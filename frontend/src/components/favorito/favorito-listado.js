@@ -165,7 +165,7 @@ export class FavoritoListado extends LitElement {
                         <p>Guarda publicaciones que te gusten para verlas aquí</p>
                     </div>
                 ` : this.favoritos.map(fav => {
-                    const imgUrl = fav.imagen ? `http://localhost:1234${fav.imagen}` : 'https://via.placeholder.com/600x400';
+                    const imgUrl = fav.imagen ? `${fav.imagen}` : 'https://via.placeholder.com/600x400';
                     return html`
                         <div class="fav-card" @click=${() => this._verPublicacion(fav)}>
                             <img class="fav-img" src="${imgUrl}" alt="${fav.titulo}" />

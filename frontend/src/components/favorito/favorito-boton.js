@@ -4,8 +4,19 @@ import '../ui-snackbar.js';
 
 export class FavoritoBoton extends LitElement {
     static styles = css`
-        .fav-btn { font-size: 1.5rem; color: #dc3545; cursor: pointer; background: none; border: none; }
-        .fav-btn.favorito { color: #ffc107; }
+        .fav-btn { 
+            font-size: 1.5rem; 
+            cursor: pointer; 
+            background: none; 
+            border: none; 
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+        .fav-btn:hover { 
+            transform: scale(1.1);
+            background: rgba(255, 193, 7, 0.1);
+        }
     `;
 
     static properties = {
@@ -43,8 +54,8 @@ export class FavoritoBoton extends LitElement {
     render() {
         return html`
       <ui-snackbar></ui-snackbar>
-      <button class="fav-btn ${this.favorito ? 'favorito' : ''}" @click=${this._toggleFavorito} title="Favorito">
-        <i class="bi ${this.favorito ? 'bi-star-fill' : 'bi-star'}"></i>
+      <button class="fav-btn" @click=${this._toggleFavorito} title="${this.favorito ? 'Quitar de favoritos' : 'Agregar a favoritos'}">
+        ${this.favorito ? '⭐' : '☆'}
       </button>
     `;
     }

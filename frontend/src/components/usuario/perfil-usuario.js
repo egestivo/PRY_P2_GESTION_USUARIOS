@@ -148,7 +148,7 @@ export class PerfilUsuario extends LitElement {
         if (!this.usuario) return html`<div class="text-center mt-5">⏳ Cargando perfil...</div>`;
         
         const fotoUrl = this.usuario.fotografia 
-            ? `http://localhost:1234${this.usuario.fotografia}?t=${Date.now()}` 
+            ? `${this.usuario.fotografia}?t=${Date.now()}` 
             : 'https://via.placeholder.com/140';
         
         // Formatear fecha de nacimiento como yyyy-mm-dd

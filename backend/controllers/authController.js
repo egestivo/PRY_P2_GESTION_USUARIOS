@@ -40,7 +40,24 @@ module.exports = {
             }
             // Asignar el rol al usuario
             await Rol.asignarRol(userId, rolId);
-            return res.status(201).json({ message: 'Usuario registrado correctamente', userId });
+            
+            // Generar token JWT para logear automáticamente al usuario
+            const token = jwt.sign({ id: userId, username, rol }, JWT_SECRET, { expiresIn: '2h' });
+            
+            // Devolver token y usuario para login automático
+            return res.status(201).json({
+                message: 'Usuario registrado correctamente',
+                token,
+                usuario: {
+                    id: userId,
+                    username,
+                    nombre,
+                    correo,
+                    fotografia,
+                    fecha_nacimiento,
+                    rol
+                }
+            });
         } catch (error) {
             console.error(error);
             return res.status(500).json({ message: 'Error en el registro.' });

@@ -8,9 +8,18 @@ const path = require('path');
 
 const app = express();
 
+// Configuración CORS para permitir acceso desde red local
+const corsOptions = {
+    origin: true, // Permite cualquier origen (red local)
+    credentials: true,
+    optionsSuccessStatus: 200,
+    allowedHeaders: ['Content-Type', 'Authorization'], // Permitir Authorization header
+    exposedHeaders: ['Authorization']
+};
+
 // Middlewares globales
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(morgan('dev'));
 
 // Configuración de almacenamiento de Multer
@@ -25,8 +34,13 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Exponer la carpeta uploads como pública
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Exponer la carpeta uploads como pública con headers CORS
+app.use('/uploads', (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET');
+    res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+}, express.static(path.join(__dirname, 'uploads')));
 
 // Rutas de autenticación
 const authRoutes = require('./routes/authRoutes');

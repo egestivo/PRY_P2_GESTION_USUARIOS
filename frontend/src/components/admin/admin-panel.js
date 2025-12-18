@@ -203,7 +203,7 @@ export class AdminPanel extends LitElement {
                                 <p>No hay usuarios registrados aún</p>
                             </div>
                         ` : this.usuarios.filter(u => u.username !== 'wiinteradm').map(u => {
-                            const fotoUrl = u.fotografia ? `http://localhost:1234${u.fotografia}` : 'https://via.placeholder.com/45';
+                            const fotoUrl = u.fotografia ? `${u.fotografia}` : 'https://via.placeholder.com/45';
                             return html`
                             <div class="user-item">
                                 <div class="user-info">

@@ -183,11 +183,36 @@ export class PublicacionListado extends LitElement {
                 padding: 0.5rem 1rem;
                 font-size: 0.875rem;
             }
+            .btn-danger {
+                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                color: white;
+                border: none;
+                animation: pulse 1s infinite;
+            }
+            .btn-danger:hover {
+                background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+                transform: translateY(-2px);
+            }
+            .confirm-message {
+                background: rgba(245, 158, 11, 0.2);
+                border: 2px solid #f59e0b;
+                border-radius: 8px;
+                padding: 0.5rem 0.75rem;
+                margin-top: 0.5rem;
+                color: #fbbf24;
+                font-size: 0.85rem;
+                text-align: center;
+                animation: fadeIn 0.3s ease;
+            }
             .fade-in { animation: fadeIn 1s; }
             @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
             @keyframes fadeInUp {
                 from { opacity: 0; transform: translateY(30px); }
                 to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.03); }
             }
         `
     ];
@@ -195,7 +220,8 @@ export class PublicacionListado extends LitElement {
   static properties = {
     publicaciones: { type: Array },
     loading: { type: Boolean },
-    user: { type: Object }
+    user: { type: Object },
+    publicacionConfirmandoEliminar: { type: Number } // ID de la publicación en modo confirmar
   };
 
     constructor() {
@@ -203,6 +229,7 @@ export class PublicacionListado extends LitElement {
         this.publicaciones = [];
         this.loading = false;
         this._allPublicaciones = [];
+        this.publicacionConfirmandoEliminar = null; // null = ninguna en modo confirmar
     }
 
     connectedCallback() {
@@ -247,8 +274,8 @@ export class PublicacionListado extends LitElement {
                         </div>
                     </div>
                 ` : this.publicaciones.map(pub => {
-                    const autorFoto = pub.autor_foto ? `http://localhost:1234${pub.autor_foto}` : 'https://via.placeholder.com/50';
-                    const pubImagen = pub.imagen ? `http://localhost:1234${pub.imagen}` : 'https://via.placeholder.com/600x400';
+                    const autorFoto = pub.autor_foto ? `${pub.autor_foto}` : 'https://via.placeholder.com/50';
+                    const pubImagen = pub.imagen ? `${pub.imagen}` : 'https://via.placeholder.com/600x400';
                     return html`
                     <div class="post-card">
                         <div class="post-header">
@@ -278,11 +305,22 @@ export class PublicacionListado extends LitElement {
                                     </button>
                                 ` : ''}
                                 ${this._puedeEliminar(pub) ? html`
-                                    <button class="btn btn-outline-danger btn-sm" @click=${e => this._confirmarEliminar(e, pub)}>
-                                        🗑️ Eliminar
-                                    </button>
+                                    ${this.publicacionConfirmandoEliminar === pub.id ? html`
+                                        <button class="btn btn-danger btn-sm" @click=${e => this._eliminarConfirmado(e, pub)}>
+                                            ⚠️ Confirmar Eliminar
+                                        </button>
+                                    ` : html`
+                                        <button class="btn btn-outline-danger btn-sm" @click=${e => this._confirmarEliminar(e, pub)}>
+                                            🗑️ Eliminar
+                                        </button>
+                                    `}
                                 ` : ''}
                             </div>
+                            ${this.publicacionConfirmandoEliminar === pub.id ? html`
+                                <div class="confirm-message">
+                                    ⚠️ Haz clic en "Confirmar Eliminar" para eliminar esta publicación
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
                 `;})}
@@ -302,27 +340,22 @@ export class PublicacionListado extends LitElement {
 
     _confirmarEliminar(e, pub) {
         e.stopPropagation();
-        this._showSnackbar(`⚠️ Eliminar "${pub.titulo}"? Haz clic de nuevo en eliminar para confirmar`, '#ff9800');
         
-        const btn = e.target.closest('button');
-        btn.style.background = '#dc3545';
-        btn.style.color = 'white';
-        btn.textContent = '⚠️ Confirmar';
+        // Establecer esta publicación en modo confirmar
+        this.publicacionConfirmandoEliminar = pub.id;
         
-        const confirmarHandler = (ev) => {
-            ev.stopPropagation();
-            this._eliminar(pub);
-            btn.removeEventListener('click', confirmarHandler);
-        };
-        
-        btn.addEventListener('click', confirmarHandler);
-        
+        // Resetear después de 4 segundos si no confirma
         setTimeout(() => {
-            btn.style.background = '';
-            btn.style.color = '';
-            btn.textContent = '🗑️ Eliminar';
-            btn.removeEventListener('click', confirmarHandler);
-        }, 3000);
+            if (this.publicacionConfirmandoEliminar === pub.id) {
+                this.publicacionConfirmandoEliminar = null;
+            }
+        }, 4000);
+    }
+
+    _eliminarConfirmado(e, pub) {
+        e.stopPropagation();
+        this.publicacionConfirmandoEliminar = null; // Resetear el estado
+        this._eliminar(pub);
     }
 
     async _eliminar(pub) {

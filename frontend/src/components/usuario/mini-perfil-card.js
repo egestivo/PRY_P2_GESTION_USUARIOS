@@ -68,7 +68,7 @@ export class MiniPerfilCard extends LitElement {
     render() {
         if (!this.usuario) return html``;
         const fotoUrl = this.usuario.fotografia 
-            ? `http://localhost:1234${this.usuario.fotografia}?t=${Date.now()}` 
+            ? `${this.usuario.fotografia}?t=${Date.now()}` 
             : 'https://via.placeholder.com/45';
         return html`
             <div class="mini-perfil" @click=${this._verPerfil}>

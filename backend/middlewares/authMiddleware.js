@@ -4,7 +4,7 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'pantuflas_de_perrito';
+const JWT_SECRET = process.env.JWT_SECRET || 'chupa_el_perro';
 
 // Verifica que el usuario esté autenticado
 function authenticateToken(req, res, next) {
